@@ -1,0 +1,3 @@
+easy-scpi
+pyvisa-py
+pyserial

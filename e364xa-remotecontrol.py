@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import argparse
 import easy_scpi as scpi
 
 
@@ -34,7 +34,12 @@ class E364XA(scpi.Instrument):
 
 
 if __name__ == '__main__':
-    inst = E364XA("/dev/ttyUSB1")
+    parser = argparse.ArgumentParser(description='E364XA remote control')
+    parser.add_argument('--port', type=str, required=True, help='port')
+
+    args = parser.parse_args()
+
+    inst = E364XA(args.port)
     inst.connect()
     inst.off()
     inst.set_voltage(5.0)
