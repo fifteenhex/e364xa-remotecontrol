@@ -33,14 +33,11 @@ class E364XA(scpi.Instrument):
     def go_local(self):
         self.system.local()
 
-    def set_voltage(self, volts):
-        self.volt(volts)
+    def get_set_voltage(self):
+        return float(self.source.voltage())
 
-    def get_voltage(self):
-        return float(self.volt())
-
-    def set_current(self, amps):
-        self.curr(amps)
+    def get_set_current(self):
+        return float(self.source.current())
 
     def voltage_range(self):
         return self.source.voltage.range().rstrip()
@@ -68,7 +65,10 @@ if __name__ == '__main__':
             voltage_range = inst.voltage_range()
             volts = inst.measure_voltage()
             current = inst.measure_current()
-            print("%s %fV %fA (, %s)" % (on_off[output_state], volts, current, voltage_range), end="\r")
+            set_volts = inst.get_set_voltage()
+            set_current = inst.get_set_current()
+            print("%s %.3fV %.3fA (%.3fV - %s, %.3fA)" % (
+                on_off[output_state], volts, current, set_volts, voltage_range, set_current,), end="\r")
     except KeyboardInterrupt:
         print("Disconnecting..")
         inst.off()
