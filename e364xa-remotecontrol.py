@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 import argparse
+import time
+
 import easy_scpi as scpi
 
 
 class E364XA(scpi.Instrument):
 
     def __init__(self, port):
-        super().__init__(port=port)
+        super().__init__(port=port,
+                         read_termination='\n',
+                         write_termination='\n')
 
     def beep(self):
         self.system.beeper()
 
-    def on(self):
-        self.output("on")
+    def output_on(self):
+        self.output.state("ON")
 
-    def off(self):
-        self.output('off')
+    def output_off(self):
+        self.output.state("OFF")
+
+    def output_state(self):
+        return int(self.output.state())
 
     def rst(self):
         self.rst()
@@ -29,8 +36,20 @@ class E364XA(scpi.Instrument):
     def set_voltage(self, volts):
         self.volt(volts)
 
+    def get_voltage(self):
+        return float(self.volt())
+
     def set_current(self, amps):
         self.curr(amps)
+
+    def voltage_range(self):
+        return self.source.voltage.range().rstrip()
+
+    def measure_voltage(self):
+        return float(self.measure.voltage())
+
+    def measure_current(self):
+        return float(self.measure.current())
 
 
 if __name__ == '__main__':
@@ -41,7 +60,16 @@ if __name__ == '__main__':
 
     inst = E364XA(args.port)
     inst.connect()
-    inst.off()
-    inst.set_voltage(5.0)
-    inst.set_current(2)
-    inst.on()
+
+    try:
+        while True:
+            on_off = ["OFF", "ON "]
+            output_state = inst.output_state()
+            voltage_range = inst.voltage_range()
+            volts = inst.measure_voltage()
+            current = inst.measure_current()
+            print("%s %fV %fA (, %s)" % (on_off[output_state], volts, current, voltage_range), end="\r")
+    except KeyboardInterrupt:
+        print("Disconnecting..")
+        inst.off()
+        inst.disconnect()
