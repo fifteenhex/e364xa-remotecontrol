@@ -57,6 +57,24 @@ so it crosses over into current limit properly:
 `--list-models` prints every supported model with its ratings and the serial
 settings it expects.
 
+### As a harness
+
+With a subcommand it does one thing and prints JSON instead of starting the
+UI, for scripts and agents:
+
+```
+psu-remote --psu bench set --voltage 3.3 --current 0.5 --output on
+psu-remote --psu bench measure --duration 5 --interval 0.25
+psu-remote --psu bench cycle --off-time 1
+psu-remote --psu bench status
+```
+
+Instruments are named in `instruments.toml` (see
+`instruments.toml.example`); `psu-remote list` says what there is. From
+Python, `psuremote.harness.open_supply` is a context manager that hands the
+front panel back however the block exits. Full reference in
+[docs/harness.md](docs/harness.md).
+
 ### Over MQTT
 
 The instrument does not have to be on the machine you are sitting at. On
@@ -208,5 +226,6 @@ PSU_TEST_BROKER=192.168.3.2 .venv/bin/python -m pytest tests/test_mqtt.py
   (part number E3640-90001)
 - [The 661xC programming guide](https://ridl.cfd.rit.edu/products/manuals/agilent/power%20supplies/cd1/Model/663xxprg.pdf)
   (part number 5962-8198)
+- [docs/harness.md](docs/harness.md) -- driving it from a script
 - [docs/instruments.md](docs/instruments.md) -- command sets, status
   register bits, model ratings and the differences between the families
