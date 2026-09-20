@@ -8,6 +8,12 @@ A terminal UI for Keysight/Agilent/HP bench and system DC power supplies:
 - **E364xA** -- E3640A, E3641A, E3642A, E3643A, E3644A, E3645A
 - **661xC** -- 6611C, 6612C, 6613C, 6614C
 
+Both families have been run against real hardware over RS-232 and MQTT --
+a 6611C and an E3640A, both into a 330 ohm load, covering CV/CC crossover,
+range switching under load, OVP trips and the 661xC's low current
+measurement range. See [docs/instruments.md](docs/instruments.md) for what
+that confirmed and the five things it corrected.
+
 ```
 ╭─ instrument ───────────────────────────────────────────────────────────────╮
 │ 6611C 661xC ASRL/dev/ttyUSB0::INSTR  9600 baud 8N1 dtr           REMOTE    │
@@ -50,6 +56,54 @@ so it crosses over into current limit properly:
 
 `--list-models` prints every supported model with its ratings and the serial
 settings it expects.
+
+### Over MQTT
+
+The instrument does not have to be on the machine you are sitting at. On
+the host it is plugged into, run `serial2mqtt` from
+[smolmqtt](https://github.com/fifteenhex/smolmqtt), which bridges a serial
+port to a pair of MQTT topics:
+
+```
+serial2mqtt -b 9600 -c 8N1 -f dtr /dev/ttyUSB0 192.168.3.2 lab/psu/6611c   # 661xC
+serial2mqtt -b 9600 -c 8N2 -f dtr /dev/ttyUSB1 192.168.3.2 lab/psu/e3640a  # E364xA
+```
+
+then point this at the same broker and base topic:
+
+```
+./psu-remote --mqtt 192.168.3.2 --topic lab/psu/6611c
+```
+
+`serial2mqtt`'s default baud is 115200, so the rate and framing have to be
+given explicitly -- and they differ between the families, as above. Add
+`--mqtt-mode data` on both sides if you are using its `-m data` base64 mode.
+
+Two things worth knowing:
+
+- **Flow control.** An E364xA always expects the DTR/DSR handshake and has
+  no setting to turn it off. Without it, one command at a time works but
+  two in a row do not -- the second is simply lost. Use `serial2mqtt -f
+  dtr`, which honours the handshake. Even with it the supply still needs a
+  small gap between commands, so the driver leaves 100ms after each one for
+  this family; with `-f dtr` you can bring that down to `--write-settle
+  0.05`, but not below. A 661xC needs none of this; set its front panel
+  flow control to NONE or DTR-DSR to match.
+- **It is a byte pipe, not a request/response protocol.** Nothing
+  correlates a command with its answer, so only one query is outstanding
+  at a time and anything left over from a timed-out query is discarded
+  rather than being handed to the next one. Measured against a broker on
+  the same LAN, a query round trip is about 44ms, so the poll interval
+  defaults to 0.75s over MQTT instead of 0.35s. Tune it with
+  `--poll-interval`.
+
+To check the topic wiring before plugging anything in, put a simulated
+supply on the broker:
+
+```
+python -m tests.fake_serial2mqtt 192.168.3.2 lab/psu/test 6611C
+./psu-remote --mqtt 192.168.3.2 --topic lab/psu/test
+```
 
 ### Ports
 
@@ -107,6 +161,16 @@ command mode -- that setting survives a power cycle and makes the supply
 ignore SCPI entirely. The tool checks and tells you, but you fix it with
 `SYST:LANG SCPI` or from the front panel Address menu.
 
+If it answers with *garbage* rather than nothing, check it is not in
+**remote front panel** mode. In that mode it streams display data out of
+the serial port continuously, which looks precisely like a baud rate or
+framing mismatch and will have you checking cables for a while.
+
+If an E364xA answers the first query and then stops, it is the DTR/DSR
+handshake -- see the MQTT section above. Once it has lost a command that
+way it stays unhappy, logging `-410 Query INTERRUPTED`, until something
+sends `*CLS`; this tool does that on connect.
+
 ## Install
 
 ```
@@ -127,6 +191,16 @@ install for serial or TCP. GPIB needs a real VISA implementation
 The tests run the real drivers and the real UI against a simulated
 instrument that speaks SCPI back, so the command strings, the status
 register decoding and the clamping are all covered without hardware.
+
+The MQTT tests have two halves. Reassembly and correlation are driven
+directly with fabricated messages, including responses arriving one byte
+per message, because a broker cannot be made to chunk on demand. The rest
+run the whole stack -- paho, a real broker, the real drivers -- against a
+simulated instrument, and are skipped when no broker is reachable:
+
+```
+PSU_TEST_BROKER=192.168.3.2 .venv/bin/python -m pytest tests/test_mqtt.py
+```
 
 ## Links
 
