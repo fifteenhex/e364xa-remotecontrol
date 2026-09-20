@@ -1,0 +1,306 @@
+/* Styling for the power supply TUI. */
+
+Screen {
+    layout: vertical;
+    background: $background;
+}
+
+/* ---- instrument bar ---------------------------------------------------- */
+
+#instrument-bar {
+    height: 3;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+}
+
+#instrument-bar > Static {
+    height: 1;
+    content-align-vertical: middle;
+    margin: 0 1 0 0;
+}
+
+#model {
+    width: auto;
+    color: $accent;
+    text-style: bold;
+}
+
+#family {
+    width: auto;
+    color: $foreground 50%;
+}
+
+#resource {
+    width: 1fr;
+    color: $foreground 70%;
+}
+
+#link-state {
+    width: auto;
+}
+
+/* ---- meters ------------------------------------------------------------ */
+
+#meters {
+    height: 9;
+}
+
+#output-panel {
+    width: 20;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+    align-horizontal: center;
+}
+
+#output-panel.-on {
+    border: round $success;
+    border-title-color: $success;
+}
+
+#output-panel.-off {
+    border: round $foreground 30%;
+}
+
+#output-state {
+    height: 2;
+    text-style: bold;
+    content-align: center middle;
+    width: 100%;
+}
+
+#output-mode {
+    height: 1;
+    content-align: center middle;
+    width: 100%;
+}
+
+#output-flags {
+    height: 1fr;
+    content-align: center middle;
+    width: 100%;
+}
+
+#output-toggle {
+    width: 100%;
+    height: 3;
+    min-width: 0;
+}
+
+.meter {
+    width: 1fr;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+}
+
+.reading-row {
+    height: 3;
+    width: 100%;
+}
+
+.meter .reading {
+    height: 3;
+    width: 1fr;
+    color: $text;
+    text-style: bold;
+}
+
+.unit {
+    width: 3;
+    height: 3;
+    content-align: center bottom;
+    color: $accent;
+    text-style: bold;
+}
+
+.meter-row {
+    height: 1;
+}
+
+.meter .setpoint {
+    width: 1fr;
+}
+
+.meter .limit {
+    width: auto;
+    text-align: right;
+}
+
+.meter .gauge {
+    height: 1;
+    width: 100%;
+    margin: 0;
+}
+
+.meter .steps {
+    height: 1;
+    width: 100%;
+    margin: 1 0 0 0;
+}
+
+/* ---- power and trend --------------------------------------------------- */
+
+#secondary {
+    height: 8;
+}
+
+/* Short terminals cannot fit everything. Drop the trend and power panels
+   first -- they are nice to have, the meters are not. */
+Screen.-compact #secondary {
+    display: none;
+}
+
+Screen.-compact .meter .limit {
+    display: none;
+}
+
+Screen.-short #instrument-bar {
+    display: none;
+}
+
+Screen.-short #entry-bar {
+    display: none;
+}
+
+#power-panel {
+    width: 26;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+}
+
+#power-reading {
+    height: 3;
+    width: 1fr;
+    color: $warning;
+    text-style: bold;
+}
+
+#power-detail {
+    height: 1fr;
+    width: 100%;
+}
+
+#trend-panel {
+    width: 1fr;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+}
+
+.trend-label {
+    height: 1;
+    color: $foreground 50%;
+}
+
+#voltage-trend {
+    height: 2;
+    width: 100%;
+}
+
+#voltage-trend > .sparkline--max-color {
+    color: $success;
+}
+
+#voltage-trend > .sparkline--min-color {
+    color: $success 40%;
+}
+
+#current-trend {
+    height: 2;
+    width: 100%;
+}
+
+#current-trend > .sparkline--max-color {
+    color: $warning;
+}
+
+#current-trend > .sparkline--min-color {
+    color: $warning 40%;
+}
+
+/* ---- direct entry ------------------------------------------------------ */
+
+#entry-bar {
+    height: 3;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+}
+
+.entry-label {
+    width: 3;
+    height: 1;
+    content-align: center middle;
+    color: $accent;
+    text-style: bold;
+}
+
+#entry-bar Input {
+    width: 1fr;
+    height: 1;
+    border: none;
+    padding: 0 1;
+    background: $boost;
+}
+
+#entry-bar Button {
+    width: auto;
+    height: 1;
+    min-width: 0;
+    border: none;
+    margin: 0 0 0 2;
+}
+
+/* ---- log --------------------------------------------------------------- */
+
+#log {
+    height: 1fr;
+    min-height: 3;
+    border: round $primary 50%;
+    border-title-color: $primary;
+    border-title-align: left;
+    padding: 0 1;
+    background: $panel;
+    scrollbar-size-vertical: 1;
+}
+
+/* ---- help overlay ------------------------------------------------------ */
+
+HelpScreen {
+    align: center middle;
+    background: $background 60%;
+}
+
+#help-box {
+    width: 62;
+    height: auto;
+    max-height: 90%;
+    border: round $accent;
+    border-title-align: center;
+    background: $surface;
+    padding: 1 2;
+}
+
+#help-body {
+    height: auto;
+}
+
+#help-close {
+    width: 100%;
+    margin: 1 0 0 0;
+}
