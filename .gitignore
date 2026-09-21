@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local instrument list; instruments.toml.example is the template.
+instruments.toml
+
+# Build output, python and debian.
+build/
+dist/
+*.egg-info/
+.pybuild/
+debian/.debhelper/
+debian/psu-remote/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars

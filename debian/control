@@ -1,0 +1,33 @@
+Source: psu-remote
+Section: electronics
+Priority: optional
+Maintainer: Daniel Palmer <daniel@thingy.jp>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               pybuild-plugin-pyproject,
+               python3-all,
+               python3-setuptools (>= 77),
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/fifteenhex/e364xa-remotecontrol
+
+Package: psu-remote
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3-paho-mqtt,
+         python3-pyvisa,
+         python3-pyvisa-py,
+         python3-serial,
+         python3-textual,
+Description: terminal UI for Keysight/Agilent DC power supplies
+ Sets and reads a bench supply over RS-232, GPIB, TCP or MQTT: setpoints,
+ output state, measured volts, amps and watts, ranges, OVP and the
+ instrument's own fault flags.
+ .
+ Supports the E364xA family (E3640A to E3645A) and the 661xC family
+ (6611C to 6614C), detected with *IDN?, plus a simulator with a resistive
+ load for when there is no instrument to hand.
+ .
+ Subcommands print JSON instead of starting the UI, so the same tool can be
+ driven from a script.

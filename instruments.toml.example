@@ -1,0 +1,24 @@
+# Instruments reachable by name, for `psu-remote --psu <name>`.
+#
+# Looked for as ./instruments.toml, then
+# ~/.config/psu-remote/instruments.toml, or wherever --config points.
+# Every key is the long form of the matching command line option.
+
+[bench]
+mqtt = "192.168.3.2"
+topic = "lab/psu/6611c"
+
+[aux]
+mqtt = "192.168.3.2"
+topic = "lab/psu/e3640a"
+# An E364xA loses the second of two commands sent back to back. 0.05 is
+# enough when the bridge runs with -f dtr.
+write_settle = 0.05
+
+[local]
+port = "/dev/ttyUSB0"
+model = "E3640A"
+
+[fake]
+simulate = "6611C"
+load = "330"

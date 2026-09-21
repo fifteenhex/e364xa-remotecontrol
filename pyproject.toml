@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psu-remote"
+description = "Remote control for Keysight/Agilent E364xA and 661xC DC power supplies"
+readme = "README.md"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Daniel Palmer", email = "daniel@thingy.jp" }]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+]
+# The version lives in the package and the dependencies in requirements.txt,
+# so there is one copy of each.
+dynamic = ["version", "dependencies", "optional-dependencies"]
+
+[project.scripts]
+psu-remote = "psuremote.cli:main"
+
+[tool.setuptools]
+packages = ["psuremote"]
+
+[tool.setuptools.package-data]
+psuremote = ["*.tcss"]
+
+[tool.setuptools.dynamic]
+version = { attr = "psuremote.__version__" }
+dependencies = { file = ["requirements.txt"] }
+optional-dependencies.dev = { file = ["requirements-dev.txt"] }
+
+[tool.ruff.lint]
+# Errors and unused/undefined names only. The rest of ruff's default set
+# disagrees with the deliberate style here, such as Decimal("0") and the
+# x != x NaN checks.
+select = ["E4", "E7", "E9", "F"]
