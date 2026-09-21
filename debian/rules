@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+# pybuild would run pytest from the build directory, where neither the tests
+# nor pytest.ini are installed; the suite is run from the source tree in CI
+# instead.
+export PYBUILD_DISABLE = test
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild

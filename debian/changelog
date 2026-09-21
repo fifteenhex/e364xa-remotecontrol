@@ -1,0 +1,6 @@
+psu-remote (2.0.0) unstable; urgency=medium
+
+  * 661xC support, a Textual UI, an MQTT transport and a harness mode.
+  * First packaged release.
+
+ -- Daniel's intern <intern@thingy.jp>  Mon, 21 Sep 2026 03:42:09 +0000

@@ -200,6 +200,18 @@ python3 -m venv .venv
 install for serial or TCP. GPIB needs a real VISA implementation
 (linux-gpib, or Keysight/NI IO Libraries).
 
+Or install it properly, which puts `psu-remote` on `$PATH` and means it
+works from any directory:
+
+```
+pip install .                                 # anywhere
+dpkg-buildpackage -us -uc -b && sudo apt install ../psu-remote_*.deb
+```
+
+The .deb depends on the Debian python3 packages rather than carrying its
+own copies, so it wants Debian testing or newer; `python3-textual` is not
+in anything older.
+
 ## Tests
 
 ```
