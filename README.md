@@ -216,6 +216,11 @@ CI runs the tests on every push and builds the .deb in a Debian testing
 container, installing it there to prove the dependencies resolve. Pushing a
 `v*` tag attaches the package to the GitHub release.
 
+The package version comes from the tag, so `v20260921` builds
+`psu-remote_20260921_all.deb`; builds that are not from a tag get
+`<changelog version>+git<date>.<sha>`. `debian/changelog` only sets the
+base version, it does not have to be bumped to cut a release.
+
 ## Tests
 
 ```
