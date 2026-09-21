@@ -212,6 +212,10 @@ The .deb depends on the Debian python3 packages rather than carrying its
 own copies, so it wants Debian testing or newer; `python3-textual` is not
 in anything older.
 
+CI runs the tests on every push and builds the .deb in a Debian testing
+container, installing it there to prove the dependencies resolve. Pushing a
+`v*` tag attaches the package to the GitHub release.
+
 ## Tests
 
 ```

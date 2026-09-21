@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: tests (python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - run: ruff check
+
+      # No instrument and no broker here, so the hardware and broker tests
+      # skip themselves; everything else runs against the simulator.
+      - run: pytest -q
+
+      - name: Install it and run it
+        run: |
+          pip install .
+          psu-remote --list-models
+          psu-remote --simulate 6611C --load 330 status
+
+  deb:
+    name: debian package
+    runs-on: ubuntu-latest
+    # Built on Debian rather than the runner's Ubuntu because that is where
+    # python3-textual and the pyvisa packages the .deb depends on exist, so
+    # installing it below actually proves the dependencies resolve.
+    container: debian:testing
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential ca-certificates debhelper dh-python git \
+            pybuild-plugin-pyproject python3-all python3-setuptools
+
+      - uses: actions/checkout@v4
+
+      - name: Check the changelog version matches the tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          changelog=$(dpkg-parsechangelog -S Version)
+          if [ "$changelog" != "${GITHUB_REF_NAME#v}" ]; then
+            echo "tag $GITHUB_REF_NAME does not match debian/changelog" \
+                 "version $changelog" >&2
+            exit 1
+          fi
+
+      - name: Build
+        run: |
+          dpkg-buildpackage -us -uc -b
+          mkdir dist
+          mv ../psu-remote_*.deb ../psu-remote_*.changes dist/
+
+      - name: Install it and run it
+        run: |
+          apt-get install -y ./dist/psu-remote_*.deb
+          psu-remote --list-models
+          psu-remote --simulate 6611C --load 330 status
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: psu-remote-deb
+          path: dist/*.deb
+
+  release:
+    name: attach the package to the release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, deb]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: psu-remote-deb
+          path: dist
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Two steps so re-running the job on a tag that already has a
+          # release replaces the package instead of failing.
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --generate-notes --verify-tag || true
+          gh release upload "$GITHUB_REF_NAME" dist/*.deb \
+            --repo "$GITHUB_REPOSITORY" --clobber
